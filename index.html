@@ -85,6 +85,9 @@
   .next__lbl{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
   .next__date{font-size:13px;font-weight:700;}
   .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .next__sites{display:flex;flex-direction:column;gap:5px;margin-top:10px;font-size:13px;color:var(--muted);}
+  .next__sites span{display:flex;align-items:center;gap:7px;}
+  .next__sites b{color:var(--ink);font-weight:600;}
 
   /* chips (shared) */
   .chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:6px 10px;border-radius:9px;
@@ -166,6 +169,10 @@
       <b>Mounjaro</b> weekly, Thursday<br>
       <b>BPC-157</b> 500 mcg capsule, daily
     </div>
+    <div class="ref">
+      <b>How sites rotate</b><br>
+      Each day alternates right and left, starting right on Day 1. The spot on that side moves through upper abdomen, lower abdomen and outer thigh, so one exact spot comes back about every six days. Two or more shots on the same day go on the same side in different spots. Stay at least 2 inches from the navel and about 1 inch from any recent mark.
+    </div>
     <button class="reset" id="resetChecks">Clear all check marks</button>
   </div>
 
@@ -231,15 +238,32 @@
     return { side: injNum % 2 === 1 ? "Right" : "Left", dayOn: pos + 1 };
   }
 
+  // ---- injection sites ----
+  // Every calendar day has a side that alternates from Day 1 (this lines up exactly with the
+  // CJC side flip). The zone on that side rotates too, so one exact spot comes back about
+  // every six days. Extra shots on the same day step to the next zone on the same side.
+  const ZONES = ["abdomen, upper", "abdomen, lower", "thigh, outer"];
+  function dayPlan(iso){
+    const idx = diffDays(iso, startISO);
+    const k = ((idx % 6) + 6) % 6;
+    return { side: k % 2 === 0 ? "Right" : "Left", zone: Math.floor(k / 2) };
+  }
+
   // ---- what is due on a given day ----
   function dueFor(iso){
     const wd = wdOf(iso);
     const out = [];
     const c = cjcAt(iso);
-    if(!c.before && !c.rest) out.push({ id:"cjc", side:c.side, dayOn:c.dayOn });
+    if(!c.before && !c.rest) out.push({ id:"cjc", dayOn:c.dayOn });
     if([1,3,5].includes(wd)) out.push({ id:"nad" });
     if([2,4].includes(wd))   out.push({ id:"glut" });
     if(wd === 4)             out.push({ id:"mj" });
+    // assign sites to the injections, in order, on the day's side
+    const plan = dayPlan(iso);
+    out.forEach((d, i) => {
+      d.side = plan.side;
+      d.site = `${plan.side} ${ZONES[(plan.zone + i) % ZONES.length]}`;
+    });
     out.push({ id:"bpc" });
     return out;
   }
@@ -327,10 +351,11 @@
   function chipHTML(iso, d, interactive){
     const done = isDone(iso, d.id);
     const col = colorFor(d);
-    const label = d.id === "cjc" ? `CJC &middot; ${d.side === "Right" ? "R" : "L"}` : SHORT[d.id];
+    const label = d.side ? `${SHORT[d.id]} &middot; ${d.side === "Right" ? "R" : "L"}` : SHORT[d.id];
     const style = done ? `background:${col.c};color:#fff` : `background:${col.s};color:${col.c}`;
     const attrs = interactive ? `data-date="${iso}" data-id="${d.id}" role="button" tabindex="0" aria-pressed="${done}"` : "";
-    return `<span class="chip ${done?"chip--on":""} ${interactive?"":"chip--static"}" style="${style}" ${attrs}>
+    const tip = d.site ? `title="${d.site}"` : "";
+    return `<span class="chip ${done?"chip--on":""} ${interactive?"":"chip--static"}" style="${style}" ${attrs} ${tip}>
       <span class="chip__tick">${done?"&check;":""}</span>${label}</span>`;
   }
 
@@ -373,8 +398,8 @@
       const col = colorFor(d);
       const it = ITEMS[d.id];
       let meta = it.meta;
-      if(d.id === "cjc"){
-        meta = `<span class="task__side" style="background:${col.s};color:${col.c}">${d.side} side</span>${it.meta} &middot; day ${d.dayOn} of 5`;
+      if(d.site){
+        meta = `<span class="task__side" style="background:${col.s};color:${col.c}">${d.site}</span>${it.meta}${d.id === "cjc" ? ` &middot; day ${d.dayOn} of 5` : ""}`;
       }
       return `<div class="task ${done?"task--done":""}" data-date="${tISO}" data-id="${d.id}" role="button" tabindex="0" aria-pressed="${done}">
         <span class="task__bar" style="background:${col.c}"></span>
@@ -397,10 +422,15 @@
     const tomISO = addDays(tISO,1);
     const tomDue = dueFor(tomISO);
     const tc = cjcAt(tomISO);
+    const tomShots = tomDue.filter(d => d.site);
+    const tomSites = tomShots.length
+      ? `<div class="next__sites">${tomShots.map(d => `<span><span class="dot" style="background:${colorFor(d).c}"></span>${ITEMS[d.id].name}: <b>${d.site}</b></span>`).join("")}</div>`
+      : "";
     const nextHTML = `<div class="next">
       <div class="next__top"><span class="next__lbl">Tomorrow</span><span class="next__date">${fmtFull(tomISO)}</span></div>
       <div class="chips">${tomDue.map(d => chipHTML(tomISO,d,false)).join("")}
         ${tc.rest ? `<span class="chip chip--static" style="background:var(--rest-soft);color:var(--rest)">CJC rest</span>` : ""}</div>
+      ${tomSites}
     </div>`;
 
     // SCHEDULE by calendar week
