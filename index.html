@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Peptide</title>
-
-<!-- Home-screen app behavior -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -16,41 +14,29 @@
 
 <style>
   :root{
-    --canvas:#F1F4F1;
-    --surface:#FFFFFF;
-    --ink:#16231D;
-    --muted:#6E7E76;
-    --line:#E2E8E2;
-    --r:#11876A;          /* Right side */
-    --r-soft:#E0F1EB;
-    --l:#DE7330;          /* Left side */
-    --l-soft:#FBEADD;
-    --rest:#9AA6A0;
-    --rest-soft:#EBEEEB;
-    --danger:#B23B3B;
-    --focus:#1B6FE0;
+    --canvas:#F1F4F1; --surface:#FFFFFF; --ink:#16231D; --muted:#6E7E76; --line:#E2E8E2;
+    --focus:#1B6FE0; --danger:#B23B3B; --rest:#9AA6A0; --rest-soft:#EBEEEB;
+    /* per-item colors */
+    --cjc-r:#11876A; --cjc-r-soft:#E0F1EB;
+    --cjc-l:#DE7330; --cjc-l-soft:#FBEADD;
+    --nad:#2D6CDF;   --nad-soft:#E3ECFB;
+    --glut:#7A4BC9;  --glut-soft:#EEE7FA;
+    --mj:#B8355F;    --mj-soft:#F9E3EA;
+    --bpc:#5B6B64;   --bpc-soft:#E8ECEA;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;}
-  body{
-    background:var(--canvas);
-    color:var(--ink);
-    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    -webkit-font-smoothing:antialiased;
-  }
+  body{background:var(--canvas);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}
   .wrap{max-width:460px;margin:0 auto;padding:18px 16px calc(64px + env(safe-area-inset-bottom));}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
 
-  /* header */
-  header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px;}
+  header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;}
   .title{font-size:23px;font-weight:800;letter-spacing:-.01em;}
   .subtitle{font-size:13px;font-weight:500;color:var(--muted);margin-top:3px;}
-  .legend{display:flex;gap:14px;margin-top:10px;}
-  .legend span{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--muted);}
-  .swatch{width:11px;height:11px;border-radius:50%;}
   .gear{flex:none;width:40px;height:40px;border-radius:12px;border:1px solid var(--line);
     background:var(--surface);color:var(--muted);font-size:18px;line-height:1;cursor:pointer;}
 
-  /* settings panel */
   .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;
     margin-bottom:14px;display:flex;flex-direction:column;gap:12px;}
   .panel label{font-size:13px;font-weight:600;display:flex;flex-direction:column;gap:6px;}
@@ -59,133 +45,169 @@
   .panel .reset{font-size:14px;font-weight:600;font-family:inherit;padding:11px;border-radius:10px;
     border:1px solid var(--line);background:#fff;color:var(--danger);cursor:pointer;}
   .panel .hint{font-size:12px;color:var(--muted);line-height:1.4;}
+  .panel .ref{font-size:12px;color:var(--muted);line-height:1.55;}
+  .panel .ref b{color:var(--ink);font-weight:600;}
 
-  /* first-run setup */
   .setup{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:26px 22px;margin-top:8px;}
-  .setup__eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;font-weight:600;
-    letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
   .setup__title{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:8px 0 10px;}
   .setup__text{font-size:14px;line-height:1.5;color:var(--muted);margin:0 0 18px;}
   .setup__label{display:flex;flex-direction:column;gap:8px;font-size:13px;font-weight:600;margin-bottom:18px;}
   .setup__label input{font-size:16px;font-family:inherit;padding:13px;border:1px solid var(--line);border-radius:12px;}
   .setup__go{width:100%;border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:700;
-    font-family:inherit;color:#fff;background:var(--r);cursor:pointer;}
+    font-family:inherit;color:#fff;background:var(--cjc-r);cursor:pointer;}
 
-  /* today card */
-  .today{border-radius:22px;padding:22px 20px 20px;border:1px solid var(--line);background:var(--surface);}
-  .today--r{background:var(--r-soft);border-color:transparent;}
-  .today--l{background:var(--l-soft);border-color:transparent;}
-  .today--rest{background:var(--rest-soft);border-color:transparent;}
-  .eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;font-weight:600;
-    letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
-  .today__big{font-size:44px;line-height:1.02;font-weight:800;letter-spacing:-.025em;margin:7px 0 3px;}
-  .today--r .today__big{color:var(--r);}
-  .today--l .today__big{color:var(--l);}
-  .today--rest .today__big{color:#556;}
-  .today__sub{font-size:14px;font-weight:500;color:var(--muted);}
-  .pips{display:flex;gap:9px;align-items:center;margin-top:15px;}
-  .pip{width:12px;height:12px;border-radius:50%;background:rgba(0,0,0,.11);}
-  .today--r .pip--done{background:var(--r);}
-  .today--l .pip--done{background:var(--l);}
-  .today--r .pip--today{box-shadow:0 0 0 2px var(--r-soft),0 0 0 4px var(--r);}
-  .today--l .pip--today{box-shadow:0 0 0 2px var(--l-soft),0 0 0 4px var(--l);}
-  .cta{margin-top:17px;width:100%;border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:700;
-    font-family:inherit;color:#fff;cursor:pointer;}
-  .today--r .cta{background:var(--r);}
-  .today--l .cta{background:var(--l);}
-  .today button.cta--done{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.6px var(--line);font-weight:600;}
+  .eyebrow{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+
+  /* today */
+  .today{border-radius:22px;padding:20px 18px 14px;border:1px solid var(--line);background:var(--surface);}
+  .today__head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:12px;}
+  .today__big{font-size:30px;line-height:1.05;font-weight:800;letter-spacing:-.02em;margin-top:6px;}
+  .today__count{font-size:13px;font-weight:700;padding:6px 11px;border-radius:999px;background:var(--canvas);color:var(--muted);white-space:nowrap;}
+  .today__count--all{background:var(--cjc-r-soft);color:var(--cjc-r);}
+  .task{display:flex;align-items:center;gap:13px;padding:12px 10px;border-radius:14px;cursor:pointer;min-height:62px;
+    transition:background .15s ease;}
+  .task + .task{border-top:1px solid var(--line);}
+  .task__bar{width:5px;align-self:stretch;border-radius:3px;flex:none;}
+  .task__body{flex:1;min-width:0;}
+  .task__name{font-size:16px;font-weight:700;line-height:1.2;}
+  .task__meta{font-size:13px;color:var(--muted);margin-top:3px;line-height:1.3;}
+  .task__side{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:7px;margin-right:6px;}
+  .task--done .task__name,.task--done .task__meta{opacity:.45;}
+  .task--done .task__name{text-decoration:line-through;}
+  .box{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:#fff;font-size:17px;flex:none;
+    box-shadow:inset 0 0 0 1.8px var(--line);transition:background .15s ease;}
+  .box--on{box-shadow:none;}
+  .task__restnote{font-size:13px;color:var(--muted);padding:10px 10px 4px;}
 
   /* up next */
-  .next{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface);
-    border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:12px;}
-  .next__lbl{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;font-weight:600;
-    letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
-  .next__val{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;text-align:right;}
-  .dot{width:9px;height:9px;border-radius:50%;flex:none;}
-  .dot--r{background:var(--r);} .dot--l{background:var(--l);} .dot--rest{background:var(--rest);}
+  .next{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 16px;margin-top:12px;}
+  .next__top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
+  .next__lbl{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+  .next__date{font-size:13px;font-weight:700;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
 
-  /* schedule list */
-  .cycle{margin-top:20px;}
-  .cycle__head{display:flex;justify-content:space-between;align-items:baseline;padding:0 4px 8px;}
-  .cycle__name{font-size:14px;font-weight:700;}
-  .cycle__range{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;
-    font-weight:600;color:var(--muted);}
-  .cycle__rows{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:5px;
-    display:flex;flex-direction:column;gap:3px;}
-  .row{display:flex;align-items:center;gap:12px;padding:11px 11px;border-radius:12px;min-height:54px;
-    transition:background .15s ease,opacity .15s ease,box-shadow .15s ease;}
-  .row[role=button]{cursor:pointer;}
-  .row__day{width:60px;flex:none;display:flex;flex-direction:column;gap:2px;line-height:1.05;}
-  .row__wd{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;font-weight:600;
-    text-transform:uppercase;letter-spacing:.05em;color:var(--muted);}
+  /* chips (shared) */
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:6px 10px;border-radius:9px;
+    line-height:1;white-space:nowrap;cursor:pointer;transition:opacity .15s ease,background .15s ease,color .15s ease;}
+  .chip__tick{width:14px;height:14px;border-radius:4px;display:grid;place-items:center;font-size:10px;
+    box-shadow:inset 0 0 0 1.5px currentColor;flex:none;}
+  .chip--on{color:#fff!important;}
+  .chip--on .chip__tick{box-shadow:none;background:rgba(255,255,255,.25);}
+  .chip--static{cursor:default;}
+
+  /* travel */
+  .travel{background:var(--surface);border:1px solid var(--line);border-radius:16px;margin-top:12px;overflow:hidden;}
+  .travel__toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;
+    border:none;background:transparent;font-family:inherit;color:var(--ink);cursor:pointer;text-align:left;}
+  .travel__toggle .eyebrow{font-size:11px;}
+  .travel__ttl{font-size:15px;font-weight:700;margin-top:2px;}
+  .travel__chev{color:var(--muted);font-size:14px;transition:transform .15s ease;}
+  .travel--open .travel__chev{transform:rotate(180deg);}
+  .travel__body{padding:0 16px 16px;display:flex;flex-direction:column;gap:12px;}
+  .travel__dates{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .travel__dates label,.travel__opt label{font-size:12px;font-weight:600;display:flex;flex-direction:column;gap:6px;color:var(--muted);}
+  .travel__dates input{font-size:15px;font-family:inherit;padding:10px;border:1px solid var(--line);border-radius:10px;color:var(--ink);background:#fff;width:100%;min-width:0;}
+  .travel__opt{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;}
+  .travel__opt input[type=number]{font-size:15px;font-family:inherit;padding:10px;border:1px solid var(--line);border-radius:10px;width:80px;}
+  .travel__pen{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink);}
+  .travel__pen input{width:18px;height:18px;}
+  .travel__pack{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+  .pack{border-radius:14px;padding:12px 10px;background:var(--canvas);text-align:center;}
+  .pack__n{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1;}
+  .pack__l{font-size:11.5px;font-weight:600;color:var(--muted);margin-top:5px;line-height:1.2;}
+  .travel__list{display:flex;flex-direction:column;gap:5px;}
+  .tl{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13.5px;padding:7px 0;border-bottom:1px solid var(--line);}
+  .tl:last-child{border-bottom:none;}
+  .tl__name{display:flex;align-items:center;gap:8px;font-weight:600;}
+  .tl__n{font-weight:700;white-space:nowrap;}
+  .travel__note{font-size:12px;color:var(--muted);line-height:1.45;}
+
+  /* schedule */
+  .week{margin-top:20px;}
+  .week__head{display:flex;justify-content:space-between;align-items:baseline;padding:0 4px 8px;}
+  .week__name{font-size:14px;font-weight:700;}
+  .week__range{font-size:12px;font-weight:600;color:var(--muted);}
+  .week__rows{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:5px;display:flex;flex-direction:column;gap:3px;}
+  .row{display:flex;align-items:flex-start;gap:12px;padding:11px 10px;border-radius:12px;}
+  .row__day{width:52px;flex:none;display:flex;flex-direction:column;gap:2px;line-height:1.05;padding-top:4px;}
+  .row__wd{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);}
   .row__dt{font-size:15px;font-weight:700;}
-  .row__mid{flex:1;}
-  .badge{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:5px 11px;border-radius:9px;}
-  .badge--r{background:var(--r-soft);color:var(--r);}
-  .badge--l{background:var(--l-soft);color:var(--l);}
-  .badge--rest{background:var(--rest-soft);color:var(--rest);}
-  .row__check{flex:none;}
-  .box{width:27px;height:27px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:15px;
-    box-shadow:inset 0 0 0 1.7px var(--line);transition:background .15s ease;}
-  .row--r .box--on{background:var(--r);box-shadow:none;}
-  .row--l .box--on{background:var(--l);box-shadow:none;}
-  .row--done .row__day,.row--done .badge{opacity:.5;}
-  .row--today{background:#fff;}
-  .row--today.row--r{box-shadow:inset 0 0 0 2px var(--r);}
-  .row--today.row--l{box-shadow:inset 0 0 0 2px var(--l);}
-  .row--today.row--rest{box-shadow:inset 0 0 0 2px var(--rest);}
-  .tag-today{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:10px;font-weight:700;
-    letter-spacing:.06em;color:var(--ink);}
+  .row__mid{flex:1;min-width:0;}
+  .row__mid .chips{margin-top:0;}
+  .row--today{background:#fff;box-shadow:inset 0 0 0 2px var(--ink);}
+  .row--past .chip:not(.chip--on){opacity:.55;}
+  .tag-today{font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--ink);margin-top:3px;}
 
   .foot{margin-top:24px;text-align:center;font-size:12px;color:var(--muted);line-height:1.5;}
-
   :focus-visible{outline:2.5px solid var(--focus);outline-offset:2px;}
   [hidden]{display:none!important;}
   @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <header id="hdr" hidden>
-      <div>
-        <div class="title">Peptide Schedule</div>
-        <div class="subtitle">5 days on, 2 off &middot; sides alternate each shot</div>
-        <div class="legend">
-          <span><i class="swatch" style="background:var(--r)"></i>R &middot; Right</span>
-          <span><i class="swatch" style="background:var(--l)"></i>L &middot; Left</span>
-        </div>
-      </div>
-      <button class="gear" id="gear" aria-label="Settings">&#9881;</button>
-    </header>
-
-    <div class="panel" id="panel" hidden>
-      <label>Day 1 of the cycle
-        <input type="date" id="startInput">
-      </label>
-      <div class="hint">Day 1 is your first Right-side shot. Change this only if you set it up on the wrong day.</div>
-      <button class="reset" id="resetChecks">Clear all check marks</button>
+<div class="wrap">
+  <header id="hdr" hidden>
+    <div>
+      <div class="title">Peptide Schedule</div>
+      <div class="subtitle">Tap an item to check it off</div>
     </div>
+    <button class="gear" id="gear" aria-label="Settings">&#9881;</button>
+  </header>
 
-    <div id="app"></div>
-
-    <div class="foot" id="foot" hidden>Saved on this device. No Claude needed.</div>
+  <div class="panel" id="panel" hidden>
+    <label>CJC-1295 / Ipamorelin Day 1
+      <input type="date" id="startInput">
+    </label>
+    <div class="hint">Day 1 is the first Right-side CJC shot. The 5-on, 2-off cycle and the side flip run from this date. Everything else follows the calendar.</div>
+    <div class="ref">
+      <b>CJC-1295 / Ipamorelin</b> 30 units subcutaneous, 5 days on, 2 off, sides alternate<br>
+      <b>NAD</b> 25 units subcutaneous, Mon / Wed / Fri<br>
+      <b>Glutathione</b> 100 units subcutaneous, Tue / Thu<br>
+      <b>Mounjaro</b> weekly, Thursday<br>
+      <b>BPC-157</b> 500 mcg capsule, daily
+    </div>
+    <button class="reset" id="resetChecks">Clear all check marks</button>
   </div>
 
-<script>
-  const KEY_START = "peptide:startDate:v1";
-  const KEY_CHECKS = "peptide:checks:v1";
+  <div id="app"></div>
+  <div class="foot" id="foot" hidden>Saved on this device. No Claude needed.</div>
+</div>
 
-  // Native device storage (persists on the phone)
+<script>
+  const KEY_START  = "peptide:startDate:v1";   // same key as before so the Day 1 date carries over
+  const KEY_CHECKS = "peptide:checks:v2";
+  const KEY_LEGACY = "peptide:checks:v1";
+  const KEY_TRAVEL = "peptide:travel:v1";
+
   const store = {
     get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
     set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
   };
 
+  // ---- the regimen ----
+  const ITEMS = {
+    cjc:  { name:"CJC-1295 / Ipamorelin", meta:"30 units &middot; subcutaneous", color:"var(--cjc-r)", soft:"var(--cjc-r-soft)" },
+    nad:  { name:"NAD",                   meta:"25 units &middot; subcutaneous", color:"var(--nad)",   soft:"var(--nad-soft)" },
+    glut: { name:"Glutathione",           meta:"100 units &middot; subcutaneous", color:"var(--glut)", soft:"var(--glut-soft)" },
+    mj:   { name:"Mounjaro",              meta:"weekly &middot; subcutaneous",   color:"var(--mj)",    soft:"var(--mj-soft)" },
+    bpc:  { name:"BPC-157",               meta:"500 mcg capsule &middot; daily", color:"var(--bpc)",   soft:"var(--bpc-soft)" },
+  };
+  const SHORT = { cjc:"CJC", nad:"NAD", glut:"Gluta", mj:"Mounjaro", bpc:"BPC" };
+
   let startISO = store.get(KEY_START);
   let checks = {};
-  try { checks = JSON.parse(store.get(KEY_CHECKS) || "{}"); } catch(e){ checks = {}; }
+  try { checks = JSON.parse(store.get(KEY_CHECKS) || "null"); } catch(e){ checks = null; }
+  if(!checks){
+    // carry over any old single-item check marks as CJC checks
+    checks = {};
+    try{
+      const old = JSON.parse(store.get(KEY_LEGACY) || "{}");
+      Object.keys(old).forEach(d => { if(old[d]) checks[d] = { cjc:true }; });
+    }catch(e){}
+    store.set(KEY_CHECKS, JSON.stringify(checks));
+  }
 
-  // ---- date helpers (local, date-only) ----
+  // ---- date helpers ----
   const WD = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   const MO = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   const pad = n => String(n).padStart(2,"0");
@@ -194,47 +216,142 @@
   const parseISO = iso => { const [y,m,d]=iso.split("-").map(Number); return new Date(y,m-1,d); };
   const addDays = (iso,n) => { const d=parseISO(iso); d.setDate(d.getDate()+n); return toISO(d); };
   const diffDays = (a,b) => Math.round((parseISO(a)-parseISO(b))/86400000);
+  const wdOf = iso => parseISO(iso).getDay();
   const fmtFull = iso => { const d=parseISO(iso); return `${WD[d.getDay()]}, ${MO[d.getMonth()]} ${d.getDate()}`; };
-  const fmtWd = iso => WD[parseISO(iso).getDay()];
   const fmtMd = iso => { const d=parseISO(iso); return `${MO[d.getMonth()]} ${d.getDate()}`; };
+  const mondayOf = iso => addDays(iso, -((wdOf(iso)+6)%7));
 
-  // ---- cycle logic: 5 on / 2 off, side alternates every injection ----
-  function action(idx){
-    const pos = ((idx % 7) + 7) % 7;
+  // ---- CJC: 5 on / 2 off, side alternates every shot ----
+  function cjcAt(iso){
+    const idx = diffDays(iso, startISO);
+    if(idx < 0) return { before:true };
+    const pos = idx % 7;
     if(pos >= 5) return { rest:true, restNo: pos - 4 };
-    const cycles = Math.floor(idx / 7);
-    const injNum = cycles * 5 + (pos + 1);                 // 1st injection ever, 2nd, ...
-    const side = (injNum % 2 === 1) ? "Right" : "Left";    // odd = Right
-    return { rest:false, side, dayOn: pos + 1 };
+    const injNum = Math.floor(idx/7)*5 + pos + 1;
+    return { side: injNum % 2 === 1 ? "Right" : "Left", dayOn: pos + 1 };
   }
 
-  function saveChecks(){ store.set(KEY_CHECKS, JSON.stringify(checks)); }
-  function toggle(iso){
-    if(checks[iso]) delete checks[iso]; else checks[iso] = true;
-    saveChecks();
+  // ---- what is due on a given day ----
+  function dueFor(iso){
+    const wd = wdOf(iso);
+    const out = [];
+    const c = cjcAt(iso);
+    if(!c.before && !c.rest) out.push({ id:"cjc", side:c.side, dayOn:c.dayOn });
+    if([1,3,5].includes(wd)) out.push({ id:"nad" });
+    if([2,4].includes(wd))   out.push({ id:"glut" });
+    if(wd === 4)             out.push({ id:"mj" });
+    out.push({ id:"bpc" });
+    return out;
+  }
+  const isDone = (iso,id) => !!(checks[iso] && checks[iso][id]);
+  function toggle(iso,id){
+    checks[iso] = checks[iso] || {};
+    if(checks[iso][id]) delete checks[iso][id]; else checks[iso][id] = true;
+    if(!Object.keys(checks[iso]).length) delete checks[iso];
+    store.set(KEY_CHECKS, JSON.stringify(checks));
     render();
   }
 
-  // ---- first-run setup ----
+  // ---- travel helper state ----
+  let travel = { open:false, leave:"", back:"", extra:1, pen:true };
+  try { const t = JSON.parse(store.get(KEY_TRAVEL) || "null"); if(t) travel = Object.assign(travel, t); } catch(e){}
+  function saveTravel(){ store.set(KEY_TRAVEL, JSON.stringify(travel)); }
+
+  function packFor(leave, back){
+    const counts = { cjc:0, nad:0, glut:0, mj:0, bpc:0 };
+    if(!leave || !back) return null;
+    const n = diffDays(back, leave);
+    if(n < 0) return null;
+    for(let i=0;i<=n;i++){
+      dueFor(addDays(leave,i)).forEach(d => counts[d.id]++);
+    }
+    const shots = counts.cjc + counts.nad + counts.glut;         // drawn from a vial
+    const pens = counts.mj;
+    return { days:n+1, counts,
+      syringes: shots + (travel.pen ? 0 : pens),
+      pads: shots + pens,
+      capsules: counts.bpc };
+  }
+
+  function travelHTML(){
+    const p = packFor(travel.leave, travel.back);
+    const x = Math.max(0, parseInt(travel.extra,10) || 0);
+    let summary = "Pick your dates";
+    if(p) summary = `${p.days} day${p.days===1?"":"s"} &middot; ${p.syringes + x} syringes &middot; ${p.pads + x} prep pads`;
+    let results = "";
+    if(p){
+      const vials = [];
+      if(p.counts.cjc) vials.push({ id:"cjc", n:p.counts.cjc, what:"shots" });
+      if(p.counts.nad) vials.push({ id:"nad", n:p.counts.nad, what:"shots" });
+      if(p.counts.glut) vials.push({ id:"glut", n:p.counts.glut, what:"shots" });
+      if(p.counts.mj) vials.push({ id:"mj", n:p.counts.mj, what: travel.pen ? "pen" + (p.counts.mj===1?"":"s") : "shots" });
+      vials.push({ id:"bpc", n:p.counts.bpc, what:"capsules" });
+      results = `
+        <div class="travel__pack">
+          <div class="pack"><div class="pack__n">${p.syringes + x}</div><div class="pack__l">syringes</div></div>
+          <div class="pack"><div class="pack__n">${p.pads + x}</div><div class="pack__l">prep pads</div></div>
+          <div class="pack"><div class="pack__n">${p.capsules + x}</div><div class="pack__l">BPC capsules</div></div>
+        </div>
+        <div class="travel__list">
+          ${vials.map(v => `<div class="tl">
+            <span class="tl__name"><span class="dot" style="background:${ITEMS[v.id].color}"></span>${ITEMS[v.id].name}</span>
+            <span class="tl__n">${v.n} ${v.what}</span></div>`).join("")}
+        </div>
+        <div class="travel__note">Counts cover ${fmtFull(travel.leave)} through ${fmtFull(travel.back)}, both days included. Each shot is one syringe and one prep pad${x ? `, plus ${x} extra of each` : ""}.</div>`;
+    } else if(travel.leave && travel.back){
+      results = `<div class="travel__note">Return date is before the leave date.</div>`;
+    }
+    return `<div class="travel ${travel.open?"travel--open":""}" id="travel">
+      <button class="travel__toggle" id="travelToggle" aria-expanded="${travel.open}">
+        <span><span class="eyebrow">Travel</span><div class="travel__ttl">${summary}</div></span>
+        <span class="travel__chev">&#9660;</span>
+      </button>
+      <div class="travel__body" ${travel.open?"":"hidden"}>
+        <div class="travel__dates">
+          <label>Leaving<input type="date" id="tLeave" value="${travel.leave}"></label>
+          <label>Back<input type="date" id="tBack" value="${travel.back}"></label>
+        </div>
+        <div class="travel__opt">
+          <label class="travel__pen"><input type="checkbox" id="tPen" ${travel.pen?"checked":""}>Mounjaro is a pen (no syringe)</label>
+          <label>Extras<input type="number" id="tExtra" min="0" max="20" value="${x}"></label>
+        </div>
+        ${results}
+      </div>
+    </div>`;
+  }
+
+  function colorFor(d){
+    if(d.id === "cjc") return d.side === "Right" ? { c:"var(--cjc-r)", s:"var(--cjc-r-soft)" } : { c:"var(--cjc-l)", s:"var(--cjc-l-soft)" };
+    return { c:ITEMS[d.id].color, s:ITEMS[d.id].soft };
+  }
+  function chipHTML(iso, d, interactive){
+    const done = isDone(iso, d.id);
+    const col = colorFor(d);
+    const label = d.id === "cjc" ? `CJC &middot; ${d.side === "Right" ? "R" : "L"}` : SHORT[d.id];
+    const style = done ? `background:${col.c};color:#fff` : `background:${col.s};color:${col.c}`;
+    const attrs = interactive ? `data-date="${iso}" data-id="${d.id}" role="button" tabindex="0" aria-pressed="${done}"` : "";
+    return `<span class="chip ${done?"chip--on":""} ${interactive?"":"chip--static"}" style="${style}" ${attrs}>
+      <span class="chip__tick">${done?"&check;":""}</span>${label}</span>`;
+  }
+
+  // ---- first run ----
   function renderSetup(){
     document.getElementById("app").innerHTML = `
       <div class="setup">
-        <div class="setup__eyebrow">First-time setup</div>
-        <h1 class="setup__title">When was Day 1?</h1>
-        <p class="setup__text">Pick the day you did your first Right-side shot. Everything else follows the 5-on, 2-off rhythm from there. You can change it later in settings.</p>
+        <div class="eyebrow">First-time setup</div>
+        <h1 class="setup__title">When was CJC Day 1?</h1>
+        <p class="setup__text">Pick the day of your first Right-side CJC-1295 / Ipamorelin shot. The 5-on, 2-off cycle runs from there. NAD, Glutathione, Mounjaro and BPC-157 follow the calendar on their own.</p>
         <label class="setup__label">Day 1
           <input type="date" id="setupDate" value="${todayISO()}">
         </label>
         <button class="setup__go" id="setupGo">Start tracking</button>
       </div>`;
     document.getElementById("setupGo").addEventListener("click", () => {
-      const v = document.getElementById("setupDate").value || todayISO();
-      startISO = v;
+      startISO = document.getElementById("setupDate").value || todayISO();
       store.set(KEY_START, startISO);
       showMain();
     });
   }
-
   function showMain(){
     document.getElementById("hdr").removeAttribute("hidden");
     document.getElementById("foot").removeAttribute("hidden");
@@ -244,147 +361,117 @@
   // ---- main render ----
   function render(){
     const tISO = todayISO();
-    const tIdx = diffDays(tISO, startISO);
     const app = document.getElementById("app");
 
     // TODAY
-    let todayHTML;
-    if(tIdx < 0){
-      todayHTML = `<div class="today">
-        <div class="eyebrow">Starts ${fmtFull(startISO)}</div>
-        <div class="today__big">Not started</div>
-        <div class="today__sub">First shot is Right side</div>
-      </div>`;
-    } else {
-      const a = action(tIdx);
-      if(a.rest){
-        todayHTML = `<div class="today today--rest">
-          <div class="eyebrow">Today &middot; ${fmtFull(tISO)}</div>
-          <div class="today__big">Rest day</div>
-          <div class="today__sub">No injection &middot; off day ${a.restNo} of 2</div>
-        </div>`;
-      } else {
-        const sc = a.side === "Right" ? "r" : "l";
-        const done = !!checks[tISO];
-        const cStart = Math.floor(tIdx / 7) * 7;
-        let pips = "";
-        for(let i=0;i<5;i++){
-          const di = cStart + i;
-          const diso = addDays(startISO, di);
-          const cls = (checks[diso] ? "pip--done " : "") + (di === tIdx ? "pip--today" : "");
-          pips += `<span class="pip ${cls}"></span>`;
-        }
-        todayHTML = `<div class="today today--${sc}">
-          <div class="eyebrow">Today &middot; ${fmtFull(tISO)}</div>
-          <div class="today__big">${a.side} side</div>
-          <div class="today__sub">Injection day ${a.dayOn} of 5</div>
-          <div class="pips">${pips}</div>
-          <button class="cta ${done ? "cta--done":""}" data-date="${tISO}">${done ? "Done &check; &middot; tap to undo" : "Mark today done"}</button>
-        </div>`;
+    const due = dueFor(tISO);
+    const doneCount = due.filter(d => isDone(tISO,d.id)).length;
+    const all = doneCount === due.length;
+    const c = cjcAt(tISO);
+    let tasks = due.map(d => {
+      const done = isDone(tISO,d.id);
+      const col = colorFor(d);
+      const it = ITEMS[d.id];
+      let meta = it.meta;
+      if(d.id === "cjc"){
+        meta = `<span class="task__side" style="background:${col.s};color:${col.c}">${d.side} side</span>${it.meta} &middot; day ${d.dayOn} of 5`;
       }
-    }
+      return `<div class="task ${done?"task--done":""}" data-date="${tISO}" data-id="${d.id}" role="button" tabindex="0" aria-pressed="${done}">
+        <span class="task__bar" style="background:${col.c}"></span>
+        <div class="task__body"><div class="task__name">${it.name}</div><div class="task__meta">${meta}</div></div>
+        <span class="box ${done?"box--on":""}" style="${done?`background:${col.c}`:""}">${done?"&check;":""}</span>
+      </div>`;
+    }).join("");
+    if(c.rest) tasks += `<div class="task__restnote">CJC-1295 / Ipamorelin rest day ${c.restNo} of 2 &middot; no shot today</div>`;
+    if(c.before) tasks += `<div class="task__restnote">CJC-1295 / Ipamorelin starts ${fmtFull(startISO)}</div>`;
+
+    const todayHTML = `<div class="today">
+      <div class="today__head">
+        <div><div class="eyebrow">Today</div><div class="today__big">${fmtFull(tISO)}</div></div>
+        <span class="today__count ${all?"today__count--all":""}">${all ? "All done &check;" : `${doneCount} of ${due.length} done`}</span>
+      </div>
+      ${tasks}
+    </div>`;
 
     // UP NEXT
-    const tomISO = addDays(tISO, 1);
-    const tomIdx = tIdx + 1;
-    let nextHTML;
-    if(tomIdx < 0){
-      nextHTML = `<div class="next"><span class="next__lbl">Up next</span>
-        <span class="next__val">Starts ${fmtFull(startISO)}</span></div>`;
-    } else {
-      const an = action(tomIdx);
-      if(an.rest){
-        nextHTML = `<div class="next"><span class="next__lbl">Up next</span>
-          <span class="next__val"><span class="dot dot--rest"></span>${fmtFull(tomISO)} &middot; Rest day</span></div>`;
-      } else {
-        const sc = an.side === "Right" ? "r" : "l";
-        nextHTML = `<div class="next"><span class="next__lbl">Up next</span>
-          <span class="next__val"><span class="dot dot--${sc}"></span>${fmtFull(tomISO)} &middot; ${an.side} side</span></div>`;
-      }
-    }
+    const tomISO = addDays(tISO,1);
+    const tomDue = dueFor(tomISO);
+    const tc = cjcAt(tomISO);
+    const nextHTML = `<div class="next">
+      <div class="next__top"><span class="next__lbl">Tomorrow</span><span class="next__date">${fmtFull(tomISO)}</span></div>
+      <div class="chips">${tomDue.map(d => chipHTML(tomISO,d,false)).join("")}
+        ${tc.rest ? `<span class="chip chip--static" style="background:var(--rest-soft);color:var(--rest)">CJC rest</span>` : ""}</div>
+    </div>`;
 
-    // SCHEDULE LIST
-    const curCycle = Math.max(0, Math.floor(tIdx / 7));
-    const startCycle = Math.max(0, curCycle - 1);
-    const endCycle = curCycle + 8;
+    // SCHEDULE by calendar week
+    const thisMon = mondayOf(tISO);
     let list = "";
-    for(let c = startCycle; c <= endCycle; c++){
-      const bStart = c * 7;
-      const bA = addDays(startISO, bStart);
-      const bB = addDays(startISO, bStart + 6);
+    for(let w = -1; w <= 8; w++){
+      const mon = addDays(thisMon, w*7);
+      const sun = addDays(mon, 6);
       let rows = "";
       for(let i=0;i<7;i++){
-        const idx = bStart + i;
-        const iso = addDays(startISO, idx);
-        const a = action(idx);
-        const isToday = idx === tIdx;
-        const todayTag = isToday ? `<span class="tag-today">TODAY</span>` : "";
-        if(a.rest){
-          rows += `<div class="row row--rest ${isToday?"row--today":""}">
-            <div class="row__day"><span class="row__wd">${fmtWd(iso)}</span><span class="row__dt">${fmtMd(iso)}</span></div>
-            <div class="row__mid"><span class="badge badge--rest">Rest day</span> ${todayTag}</div>
-            <div class="row__check"></div>
-          </div>`;
-        } else {
-          const sc = a.side === "Right" ? "r" : "l";
-          const done = !!checks[iso];
-          rows += `<div class="row row--${sc} ${isToday?"row--today":""} ${done?"row--done":""}"
-              data-date="${iso}" role="button" tabindex="0" aria-pressed="${done}">
-            <div class="row__day"><span class="row__wd">${fmtWd(iso)}</span><span class="row__dt">${fmtMd(iso)}</span></div>
-            <div class="row__mid"><span class="badge badge--${sc}">${a.side === "Right" ? "R" : "L"} &middot; ${a.side} side</span> ${todayTag}</div>
-            <div class="row__check"><span class="box ${done?"box--on":""}">${done?"&check;":""}</span></div>
-          </div>`;
-        }
+        const iso = addDays(mon,i);
+        const isToday = iso === tISO;
+        const isPast = diffDays(iso,tISO) < 0;
+        const dd = dueFor(iso);
+        const cc = cjcAt(iso);
+        rows += `<div class="row ${isToday?"row--today":""} ${isPast?"row--past":""}">
+          <div class="row__day"><span class="row__wd">${WD[wdOf(iso)]}</span><span class="row__dt">${fmtMd(iso)}</span>
+            ${isToday?`<span class="tag-today">TODAY</span>`:""}</div>
+          <div class="row__mid"><div class="chips">${dd.map(d => chipHTML(iso,d,true)).join("")}
+            ${cc.rest ? `<span class="chip chip--static" style="background:var(--rest-soft);color:var(--rest)">CJC rest</span>` : ""}</div></div>
+        </div>`;
       }
-      list += `<div class="cycle">
-        <div class="cycle__head"><span class="cycle__name">Cycle ${c+1}</span>
-          <span class="cycle__range">${fmtMd(bA)} &ndash; ${fmtMd(bB)}</span></div>
-        <div class="cycle__rows">${rows}</div>
+      const name = w === 0 ? "This week" : w === -1 ? "Last week" : w === 1 ? "Next week" : `Week of ${fmtMd(mon)}`;
+      list += `<div class="week">
+        <div class="week__head"><span class="week__name">${name}</span><span class="week__range">${fmtMd(mon)} &ndash; ${fmtMd(sun)}</span></div>
+        <div class="week__rows">${rows}</div>
       </div>`;
     }
 
-    app.innerHTML = todayHTML + nextHTML + list;
+    app.innerHTML = todayHTML + nextHTML + travelHTML() + list;
   }
 
-  // ---- events (bound once) ----
+  // ---- events ----
   function wire(){
     const app = document.getElementById("app");
+    const hit = e => e.target.closest("[data-date][data-id]");
     app.addEventListener("click", e => {
-      const el = e.target.closest("[data-date]");
-      if(el){ toggle(el.getAttribute("data-date")); }
+      if(e.target.closest("#travelToggle")){ travel.open = !travel.open; saveTravel(); render(); return; }
+      const el = hit(e); if(el) toggle(el.dataset.date, el.dataset.id);
+    });
+    app.addEventListener("change", e => {
+      const id = e.target.id;
+      if(id === "tLeave"){ travel.leave = e.target.value; if(!travel.back || travel.back < travel.leave) travel.back = travel.leave; }
+      else if(id === "tBack"){ travel.back = e.target.value; }
+      else if(id === "tExtra"){ travel.extra = Math.max(0, parseInt(e.target.value,10) || 0); }
+      else if(id === "tPen"){ travel.pen = e.target.checked; }
+      else return;
+      saveTravel(); render();
     });
     app.addEventListener("keydown", e => {
       if(e.key !== "Enter" && e.key !== " ") return;
-      const el = e.target.closest("[data-date][role=button]");
-      if(el){ e.preventDefault(); toggle(el.getAttribute("data-date")); }
+      const el = hit(e); if(el){ e.preventDefault(); toggle(el.dataset.date, el.dataset.id); }
     });
-
-    const gear = document.getElementById("gear");
     const panel = document.getElementById("panel");
     const startInput = document.getElementById("startInput");
-    gear.addEventListener("click", () => {
-      const show = panel.hasAttribute("hidden");
-      if(show){ panel.removeAttribute("hidden"); startInput.value = startISO; }
+    document.getElementById("gear").addEventListener("click", () => {
+      if(panel.hasAttribute("hidden")){ panel.removeAttribute("hidden"); startInput.value = startISO; }
       else panel.setAttribute("hidden","");
     });
     startInput.addEventListener("change", () => {
       if(!startInput.value) return;
-      startISO = startInput.value;
-      store.set(KEY_START, startISO);
-      render();
+      startISO = startInput.value; store.set(KEY_START, startISO); render();
     });
     document.getElementById("resetChecks").addEventListener("click", () => {
       if(!window.confirm("Clear every check mark? This can't be undone.")) return;
-      checks = {};
-      saveChecks();
-      render();
+      checks = {}; store.set(KEY_CHECKS, JSON.stringify(checks)); render();
     });
   }
 
-  // ---- boot ----
   wire();
-  if(!startISO){ renderSetup(); }
-  else { showMain(); }
+  if(!startISO) renderSetup(); else showMain();
 </script>
 </body>
 </html>
