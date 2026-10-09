@@ -166,12 +166,12 @@
       <b>CJC-1295 / Ipamorelin</b> 30 units subcutaneous, 5 days on, 2 off, sides alternate<br>
       <b>NAD</b> 25 units subcutaneous, Mon / Wed / Fri<br>
       <b>Glutathione</b> 100 units subcutaneous, Tue / Thu<br>
-      <b>Mounjaro</b> weekly, Thursday<br>
+      <b>Mounjaro</b> pen, weekly, Thursday<br>
       <b>BPC-157</b> 500 mcg capsule, daily
     </div>
     <div class="ref">
       <b>How sites rotate</b><br>
-      Each day alternates right and left, starting right on Day 1. The spot on that side moves through upper abdomen, lower abdomen and outer thigh, so one exact spot comes back about every six days. Two or more shots on the same day go on the same side in different spots. Stay at least 2 inches from the navel and about 1 inch from any recent mark.
+      All shots go in the abdomen. Each day alternates right and left of the navel, starting right on Day 1. The spot on that side moves through upper (above the navel line), middle (level with the navel) and lower (below it), so one exact spot comes back about every six days. Two or more shots on the same day go on the same side at different heights. Stay at least 2 inches from the navel and about 1 inch from any recent mark.
     </div>
     <button class="reset" id="resetChecks">Clear all check marks</button>
   </div>
@@ -196,7 +196,7 @@
     cjc:  { name:"CJC-1295 / Ipamorelin", meta:"30 units &middot; subcutaneous", color:"var(--cjc-r)", soft:"var(--cjc-r-soft)" },
     nad:  { name:"NAD",                   meta:"25 units &middot; subcutaneous", color:"var(--nad)",   soft:"var(--nad-soft)" },
     glut: { name:"Glutathione",           meta:"100 units &middot; subcutaneous", color:"var(--glut)", soft:"var(--glut-soft)" },
-    mj:   { name:"Mounjaro",              meta:"weekly &middot; subcutaneous",   color:"var(--mj)",    soft:"var(--mj-soft)" },
+    mj:   { name:"Mounjaro",              meta:"pen &middot; weekly",            color:"var(--mj)",    soft:"var(--mj-soft)" },
     bpc:  { name:"BPC-157",               meta:"500 mcg capsule &middot; daily", color:"var(--bpc)",   soft:"var(--bpc-soft)" },
   };
   const SHORT = { cjc:"CJC", nad:"NAD", glut:"Gluta", mj:"Mounjaro", bpc:"BPC" };
@@ -242,7 +242,7 @@
   // Every calendar day has a side that alternates from Day 1 (this lines up exactly with the
   // CJC side flip). The zone on that side rotates too, so one exact spot comes back about
   // every six days. Extra shots on the same day step to the next zone on the same side.
-  const ZONES = ["abdomen, upper", "abdomen, lower", "thigh, outer"];
+  const ZONES = ["abdomen, upper", "abdomen, middle", "abdomen, lower"];
   function dayPlan(iso){
     const idx = diffDays(iso, startISO);
     const k = ((idx % 6) + 6) % 6;
@@ -277,7 +277,7 @@
   }
 
   // ---- travel helper state ----
-  let travel = { open:false, leave:"", back:"", extra:1, pen:true };
+  let travel = { open:false, leave:"", back:"", extra:1 };
   try { const t = JSON.parse(store.get(KEY_TRAVEL) || "null"); if(t) travel = Object.assign(travel, t); } catch(e){}
   function saveTravel(){ store.set(KEY_TRAVEL, JSON.stringify(travel)); }
 
@@ -289,11 +289,12 @@
     for(let i=0;i<=n;i++){
       dueFor(addDays(leave,i)).forEach(d => counts[d.id]++);
     }
-    const shots = counts.cjc + counts.nad + counts.glut;         // drawn from a vial
-    const pens = counts.mj;
+    const shots = counts.cjc + counts.nad + counts.glut;         // drawn from a vial, one syringe each
+    const pens = counts.mj;                                      // Mounjaro pen, no syringe, still a prep pad
     return { days:n+1, counts,
-      syringes: shots + (travel.pen ? 0 : pens),
+      syringes: shots,
       pads: shots + pens,
+      pens,
       capsules: counts.bpc };
   }
 
@@ -308,7 +309,7 @@
       if(p.counts.cjc) vials.push({ id:"cjc", n:p.counts.cjc, what:"shots" });
       if(p.counts.nad) vials.push({ id:"nad", n:p.counts.nad, what:"shots" });
       if(p.counts.glut) vials.push({ id:"glut", n:p.counts.glut, what:"shots" });
-      if(p.counts.mj) vials.push({ id:"mj", n:p.counts.mj, what: travel.pen ? "pen" + (p.counts.mj===1?"":"s") : "shots" });
+      if(p.counts.mj) vials.push({ id:"mj", n:p.counts.mj, what: "pen" + (p.counts.mj===1?"":"s") });
       vials.push({ id:"bpc", n:p.counts.bpc, what:"capsules" });
       results = `
         <div class="travel__pack">
@@ -321,7 +322,7 @@
             <span class="tl__name"><span class="dot" style="background:${ITEMS[v.id].color}"></span>${ITEMS[v.id].name}</span>
             <span class="tl__n">${v.n} ${v.what}</span></div>`).join("")}
         </div>
-        <div class="travel__note">Counts cover ${fmtFull(travel.leave)} through ${fmtFull(travel.back)}, both days included. Each shot is one syringe and one prep pad${x ? `, plus ${x} extra of each` : ""}.</div>`;
+        <div class="travel__note">Counts cover ${fmtFull(travel.leave)} through ${fmtFull(travel.back)}, both days included. Each vial shot is one syringe and one prep pad, and each Mounjaro pen is one prep pad${x ? `, plus ${x} extra of each` : ""}.</div>`;
     } else if(travel.leave && travel.back){
       results = `<div class="travel__note">Return date is before the leave date.</div>`;
     }
@@ -336,7 +337,7 @@
           <label>Back<input type="date" id="tBack" value="${travel.back}"></label>
         </div>
         <div class="travel__opt">
-          <label class="travel__pen"><input type="checkbox" id="tPen" ${travel.pen?"checked":""}>Mounjaro is a pen (no syringe)</label>
+          <span class="travel__note">Extra syringes, pads and capsules to pack on top of the count</span>
           <label>Extras<input type="number" id="tExtra" min="0" max="20" value="${x}"></label>
         </div>
         ${results}
@@ -476,7 +477,6 @@
       if(id === "tLeave"){ travel.leave = e.target.value; if(!travel.back || travel.back < travel.leave) travel.back = travel.leave; }
       else if(id === "tBack"){ travel.back = e.target.value; }
       else if(id === "tExtra"){ travel.extra = Math.max(0, parseInt(e.target.value,10) || 0); }
-      else if(id === "tPen"){ travel.pen = e.target.checked; }
       else return;
       saveTravel(); render();
     });
