@@ -264,7 +264,7 @@
   const HEIGHTS = ["upper", "middle", "lower"];
   const mod = (a,m) => ((a % m) + m) % m;
   const KEY_ANCHOR = "peptide:siteAnchor:v1";
-  let anchor = { date:"2026-10-30", side:"Right", height:"middle" };   // set after Thu Oct 29, 2026
+  let anchor = { date:"2026-10-29", side:"Right", height:"upper" };   // Thu Oct 29, 2026: CJC right upper, Gluta left middle, Mounjaro right lower
   try { const a = JSON.parse(store.get(KEY_ANCHOR) || "null"); if(a && a.date) anchor = Object.assign(anchor, a); } catch(e){}
   function saveAnchor(){ store.set(KEY_ANCHOR, JSON.stringify(anchor)); beforeCache = {}; }
 
